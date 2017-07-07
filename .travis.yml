@@ -48,7 +48,7 @@ before_deploy:
     - cd $NERVES_PACKAGE
     - $NERVES_PACKAGE/deps/nerves_system_br/scripts/ci-deploy.sh
     - mkdir -p fw
-    - cp _build/test/nerves/images/*.fw ~/fw/$TRAVIS_COMMIT.fw
+    - cp _build/test/nerves/images/*.fw fw/$TRAVIS_COMMIT.fw
 deploy:
   # Deploy tagged releases to GitHub
   - provider: releases
