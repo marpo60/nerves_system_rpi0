@@ -21,7 +21,7 @@ cache:
       - $HOME/.nerves/cache/buildroot
 
 env:
-  - NERVES_TARGET=rpi0 CI_SYSTEM_NAME=nerves_system_$NERVES_TARGET REPO=nerves-project/$CI_SYSTEM_NAME NERVES_SYSTEM_CACHE=none NERVES_SYSTEM_COMPILER=local NERVES_PACKAGE=`pwd`
+  - MIX_ENV=test NERVES_TARGET=rpi0 CI_SYSTEM_NAME=nerves_system_$NERVES_TARGET REPO=nerves-project/$CI_SYSTEM_NAME NERVES_SYSTEM_CACHE=none NERVES_SYSTEM_COMPILER=local NERVES_PACKAGE=`pwd`
 
 before_install:
   - git clone https://github.com/elixir-lang/elixir
@@ -40,16 +40,7 @@ script:
   - mix deps.get
   - mix archive.install https://github.com/nerves-project/archives/raw/master/nerves_bootstrap.ez --force
   - mix compile
-  # Testing should be moved to locally execute mix test.
-  #  This will centralize the test suite for systems to the nerves package
-  #  Removing these for now
-  # - export NERVES_SYSTEM=$NERVES_PACKAGE/_build/dev/nerves/system
-  # - export NERVES_TOOLCHAIN=$NERVES_PACKAGE/_build/dev/nerves/toolchain
-  # - git clone https://github.com/nerves-project/nerves-examples
-  # - cd nerves-examples/hello_gpio
-  # - MIX_ENV=travis mix deps.get
-  # - MIX_ENV=travis mix compile
-  # - MIX_ENV=travis mix firmware
+  - mix firmware
 
 # Deploy the build products
 before_deploy:
@@ -57,6 +48,8 @@ before_deploy:
     - make system
     - cd $NERVES_PACKAGE
     - $NERVES_PACKAGE/deps/nerves_system_br/scripts/ci-deploy.sh
+    - mkdir ~/fw
+    - cp _build/test/nerves/images/*.fw ~/fw/$TRAVIS_COMMIT.fw
 deploy:
   # Deploy tagged releases to GitHub
   - provider: releases
@@ -76,6 +69,17 @@ deploy:
     skip_cleanup: true
     local_dir: artifacts
     upload-dir: test
+    acl: public_read
+    on:
+      repo: $REPO
+      all_branches: true
+  - provider: s3
+    access_key_id: $S3_ID
+    secret_access_key: $S3_KEY
+    bucket: $S3_BUCKET
+    skip_cleanup: true
+    local_dir: fw
+    upload-dir: fw
     acl: public_read
     on:
       repo: $REPO
