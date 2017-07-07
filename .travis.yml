@@ -78,7 +78,7 @@ deploy:
     bucket: $S3_BUCKET
     skip_cleanup: true
     local_dir: fw
-    upload-dir: fw
+    upload-dir: fw/$NERVES_TARGET
     acl: public_read
     on:
       repo: $REPO

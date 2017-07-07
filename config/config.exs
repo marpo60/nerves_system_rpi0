@@ -21,6 +21,7 @@ use Mix.Config
 
 key_mgmt = System.get_env("NERVES_NETWORK_KEY_MGMT") || "WPA-PSK"
 test_server = System.get_env("NERVES_TEST_SERVER")
+websocket_protocol = System.get_env("WEBSOCKET_PROTOCOL") || "ws"
 
 config :bootloader,
   init: [:nerves_runtime, :nerves_network],
@@ -31,9 +32,12 @@ config :nerves_network, :default,
     ssid: System.get_env("NERVES_NETWORK_SSID"),
     psk: System.get_env("NERVES_NETWORK_PSK"),
     key_mgmt: String.to_atom(key_mgmt)
+  ],
+  eth0: [
+    ipv4_address_method: :dhcp
   ]
 
 config :nerves_system_test, Nerves.System.Test.Socket,
-  url: "ws://#{test_server}/socket/websocket",
+  url: "#{websocket_protocol}://#{test_server}/socket/websocket",
   serializer: Poison,
   reconnect: true
